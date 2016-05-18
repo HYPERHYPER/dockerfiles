@@ -1,14 +1,16 @@
 # PGBouncer
 
-This is primarily from [mbentley/ubuntu-pgbouncer](https://hub.docker.com/r/mbentley/ubuntu-pgbouncer/), with some added tweaks to the ini file.  If you've stumbled upon this from some other search, I recommend using that version over this one.
+This is primarily from [mbentley/ubuntu-pgbouncer](https://hub.docker.com/r/mbentley/ubuntu-pgbouncer/), with some changes below:
 
 ## Changes from original source
 
 - Explicitly uses trusty version of Ubuntu
-- Uses `md5` instead of `trust` for auth, since `trust` doesn't validate the password (which is fine if your security group / vpc prevents connections from outside sources, but I prefer it to still auth)
+- Uses `md5` instead of `trust` for auth, since `trust` doesn't validate the password (which is fine if your security group / vpc prevents connections from outside sources, or the username is randomish, but I prefer it to still auth)
 - Added admin_users, stats_users
 - pool_mode is now `transaction`
 - default default_pool_size now 475
+- passing through username/pass to origin
+- server ssl is required
 
 ## General Info
 
