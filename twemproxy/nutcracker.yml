@@ -1,0 +1,20 @@
+redis:
+  listen: 0.0.0.0:6379
+#  hash: fnv1a_64
+  hash: crc16
+  hash_tag: "{}"
+  distribution: ketama
+  redis: true
+  preconnect: true
+  servers:
+    - redis01:6379:1
+    # - 127.0.0.1:7000:1
+    # - 127.0.0.1:7002:1
+
+memcached:
+  listen: 0.0.0.0:11211
+  hash: crc16
+  preconnect: true
+  servers:
+    - memcached01:11211:1
+    # - 192.168.1.169:7101:1
