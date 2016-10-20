@@ -136,7 +136,9 @@ def update_twemproxy_config(addresses, input_filename, output_filename):
     # addresses can be None when the AWS API is not reachable; just write input to output
     for engine in ['memcached', 'redis']:
       config[engine]['servers'] = addresses[engine]
-  new_config = yaml.dump(config)
+
+  # default_flow_style=False makes lists happen on newlines with hyphens instead of []
+  new_config = yaml.dump(config, default_flow_style=False)
 
   # write new config
   f = open(output_filename, 'w')
