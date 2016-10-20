@@ -10,6 +10,8 @@ from pprint import pprint
 # configuration
 CLUSTER_TAG_KEY = "PhhhotoTwemproxyMember"
 CLUSTER_TAG_VALUE = "true"
+# AWS region to use when we really, really can't find one in the environment
+FALLBACK_AWS_REGION = "us-east-1"
 
 # This depends on some things in the environment. It will use credentials
 # in ~/.aws/config (useful in development). It can also just use AWS_DEFAULT_REGION
@@ -57,20 +59,31 @@ def get_session_region_client():
   http://169.254.169.254/latest/meta-data/placement/availability-zone
   to try to get the current one. If it can't, we crash.
   """
+  global FALLBACK_AWS_REGION
+
   session = boto3.session.Session()
   try:
     client = session.client('elasticache')
   except botocore.exceptions.NoRegionError, e:
     # no region, so ask this mysterious AWS URL
-    print "no AWS region; get one from http://169.254.169.254/latest/meta-data/placement/availability-zone..."
-    import requests
-    import os
-    resp = requests.get('http://169.254.169.254/latest/meta-data/placement/availability-zone')
-    region = resp.text[:-1] # trim the last char (us-east-1b -> us-east-1)
-    print "found region %s" % region
-    os.environ['AWS_DEFAULT_REGION'] = region
+    url = "http://169.254.169.254/latest/meta-data/placement/availability-zone"
+    print "no AWS region; get one from %s..." % url
 
-    # try it again, if this doesn't work, just crash
+    import requests
+    import requests.exceptions
+    import os
+    
+    try:
+      resp = requests.get(url)
+      region = resp.text[:-1] # trim the last char (us-east-1b -> us-east-1)
+      print "found region %s" % region
+    except requests.exceptions.ConnectionError, e:
+      print "Unable to connect to AWS API to get region. Defaulting to %s" % FALLBACK_AWS_REGION
+      region = FALLBACK_AWS_REGION
+
+    os.environ['AWS_DEFAULT_REGION'] = region
+    
+    # try it again. if this doesn't work, just crash
     client = session.client('elasticache')
 
   region = session.region_name

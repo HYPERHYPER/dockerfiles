@@ -14,31 +14,19 @@ RUN apt-get update -y
 RUN apt-get install twemproxy -y
 
 # install boto & related dependencies for twemproxy auto-configuration script
-RUN apt-get install python-setuptools python-yaml -y && easy_install boto3
-
-# set AWS_DEFAULT_REGION
-# RUN set-aws-region.sh
-# RUN apt-get install curl -y
-# RUN export AWS_DEFAULT_REGION=$(curl -s 169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/.$//')
-ENV AWS_DEFAULT_REGION=us-east-1
+RUN apt-get install python-setuptools python-requests python-yaml -y && easy_install boto3
 
 # install twemproxy auto-configuration script
 ADD nutcracker_aws_autoconf.py /usr/src/nutcracker_aws_autoconf.py
 ADD nutcracker.yml /usr/src/nutcracker.yml
 
-# run twemproxy auto-configuration script
-RUN python /usr/src/nutcracker_aws_autoconf.py /usr/src/nutcracker.yml /etc/nutcracker.yml
-
-
 # install tools for debugging
-RUN apt-get install telnet netcat nano lsof -y
+# RUN apt-get install telnet netcat nano lsof -y
 # install AWS API tools
-RUN apt-get install awscli -y
-
-
-# COPY nutcracker.yml /etc/
+# RUN apt-get install awscli -y
 
 EXPOSE 6379 11211 22222
 
-# CMD ["nutcracker", "-d", "-c", "/etc/nutcracker.yml", "-o", "/var/log/nutcracker.log"]
-CMD ["nutcracker", "-c", "/etc/nutcracker.yml", "--verbose=11"]
+ADD run.sh /usr/local/bin/run
+RUN chmod +x /usr/local/bin/run
+CMD ["/usr/local/bin/run"]
